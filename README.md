@@ -1,3 +1,5 @@
+![Encrypted MQTT Chat](docs/banner.png)
+
 # encrypted-mqtt-chat
 
 A small desktop group chat. Messages travel over MQTT and are encrypted with a
