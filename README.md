@@ -8,9 +8,9 @@ I built this to learn how MQTT publish/subscribe works and what you can and
 cannot get from symmetric encryption on top of a channel you do not control.
 The "what it does not protect" section below is the honest part.
 
-<!-- ![Login screen](docs/screenshots/login.png)
-     Login window, a two-client conversation, and the ciphertext as the broker sees it —
-     captured against a local Mosquitto. Added in the screenshot pass. -->
+![Login screen — username, topic and a generated Fernet key](docs/screenshots/login.png)
+
+![Two clients talking on one topic against a local broker; own messages in blue, the other person's in orange](docs/screenshots/chat.png)
 
 ## How it works
 
