@@ -12,6 +12,8 @@ The "what it does not protect" section below is the honest part.
 
 ![Two clients talking on one topic against a local broker; own messages in blue, the other person's in orange](docs/screenshots/chat.png)
 
+![A third client on the same topic with a different key: the app can't read those messages, says so once, and drops them instead of showing broken text](docs/screenshots/foreign-key.png)
+
 ## How it works
 
 Everyone who wants to talk joins the same MQTT topic and types the same key.
@@ -27,6 +29,10 @@ never has the key.
 - Key handling: paste a Fernet key, or press *Generate* to get one and share it
   with the other people out of band. If you type a plain phrase instead, the app
   runs it through PBKDF2-HMAC-SHA256 (600k iterations, fixed salt) to get a key.
+- Wrong key on the topic: MQTT topics are open, so anyone can publish to the one
+  you are using. If their payload does not decrypt with your key the app prints a
+  one-time system notice and ignores the rest, rather than rendering the failure
+  as a message.
 
 ## What it does not protect
 

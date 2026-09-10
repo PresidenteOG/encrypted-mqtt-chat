@@ -3,7 +3,16 @@ import time
 
 import paho.mqtt.client as mqtt
 
-from encryption import encrypt_message, decrypt_message_with_key, get_fernet_instance
+from encryption import (
+    encrypt_message,
+    decrypt_message_with_key,
+    get_fernet_instance,
+    DecryptionError,
+)
+
+# La GUI reconoce este marcador y lo pinta como aviso del sistema en vez de como
+# un mensaje de otra persona.
+FOREIGN_KEY_NOTICE = "__system__:foreign_key"
 
 # El broker por defecto es un Mosquitto local. Se puede apuntar a otro host con
 # la variable de entorno MQTT_BROKER (o MQTT_PORT). No hay ningun broker publico
@@ -30,6 +39,7 @@ class MqttClient:
         self.message_callback = None
         self.topic = topic
         self.fernet = get_fernet_instance(encryption_key)
+        self._warned_foreign_key = False
 
     def _on_connect(self, client, userdata, flags, reason_code, properties):
         if reason_code == 0:
@@ -41,13 +51,25 @@ class MqttClient:
     def _on_message(self, client, userdata, msg):
         try:
             encrypted_payload = msg.payload.decode()
-            decrypted_message = decrypt_message_with_key(encrypted_payload, self.fernet)
-            if self.message_callback:
-                self.message_callback(decrypted_message)
-            else:
-                print(f"Mensaje recibido: {decrypted_message}")
         except Exception as e:
-            print(f"Error al procesar mensaje: {e}")
+            print(f"Payload no decodificable, ignorado: {e}")
+            return
+
+        try:
+            decrypted_message = decrypt_message_with_key(encrypted_payload, self.fernet)
+        except DecryptionError:
+            # Alguien publica en este tópico con otra clave (o manda basura).
+            # No es un mensaje del chat: se avisa una sola vez y se ignora el
+            # resto, en lugar de llenar la ventana de errores.
+            if not self._warned_foreign_key and self.message_callback:
+                self._warned_foreign_key = True
+                self.message_callback(FOREIGN_KEY_NOTICE)
+            return
+
+        if self.message_callback:
+            self.message_callback(decrypted_message)
+        else:
+            print(f"Mensaje recibido: {decrypted_message}")
 
     def _on_disconnect(self, client, userdata, flags, reason_code, properties):
         print(f"Desconectado con código de resultado {reason_code}")

@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox, font
 import threading
 import time
-from mqtt_client import MqttClient
+from mqtt_client import MqttClient, FOREIGN_KEY_NOTICE
 from datetime import datetime
 import re
 import random
@@ -445,11 +445,17 @@ class ChatGUI:
     
     def display_message(self, message):
         """Mostrar mensaje recibido con formato mejorado"""
+        if message == FOREIGN_KEY_NOTICE:
+            self.root.after(0, lambda: self.add_system_message(
+                "Someone is publishing on this topic with a different key. "
+                "Those messages can't be read, so they're being ignored."))
+            return
+
         def update_gui():
             timestamp = datetime.now().strftime("%H:%M:%S")
             self.messages_text.config(state=tk.NORMAL)
             self.messages_text.insert(tk.END, f"[{timestamp}] ", "timestamp")
-            
+
             # Determinar tipo de mensaje y aplicar formato
             if "joined the chat" in message.lower():
                 self.messages_text.insert(tk.END, f"{message}\n", "join")

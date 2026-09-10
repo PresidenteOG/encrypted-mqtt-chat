@@ -4,6 +4,12 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 
+
+class DecryptionError(Exception):
+    """El payload no se pudo descifrar con la clave actual: normalmente porque
+    alguien está publicando en el mismo tópico con otra clave, o porque no es un
+    token Fernet."""
+
 def get_fernet_instance(key_string: str) -> Fernet:
     """Retorna una instancia de Fernet a partir de una clave en string."""
     if not key_string:
@@ -35,12 +41,17 @@ def encrypt_message(message: str, fernet_instance: Fernet) -> str:
     return encrypted_bytes.decode() # Devuelve la cadena en base64
 
 def decrypt_message_with_key(encrypted_message: str, fernet_instance: Fernet) -> str:
-    """Desencripta un mensaje usando una instancia de Fernet."""
+    """Desencripta un mensaje usando una instancia de Fernet.
+
+    Lanza DecryptionError si el token no cuadra con la clave. Antes esto
+    devolvía la cadena "Error al desencriptar: ..." y la GUI la pintaba como un
+    mensaje más del chat; ahora el llamador decide qué hacer (ver
+    MqttClient._on_message)."""
     try:
         decrypted_bytes = fernet_instance.decrypt(encrypted_message.encode())
         return decrypted_bytes.decode()
     except Exception as e:
-        return f"Error al desencriptar: {e}"
+        raise DecryptionError(str(e)) from e
 
 # Ejemplo de uso (para pruebas internas)
 if __name__ == "__main__":

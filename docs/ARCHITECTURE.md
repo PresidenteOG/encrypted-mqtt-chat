@@ -33,6 +33,11 @@ broker delivers ciphertext on the subscribed topic
   -> Tkinter text widget, tagged by message type
 ```
 
+If `decrypt_message_with_key` raises `DecryptionError` (a payload published to the
+topic with a different key, or plain garbage), `_on_message` sends a single
+`FOREIGN_KEY_NOTICE` through the callback the first time it happens and drops
+every later one, so the chat window never shows a decryption failure as a line.
+
 The MQTT network loop runs on a background thread (`loop_start`). `display_message`
 marshals back onto the Tk main thread with `root.after(0, ...)`.
 

@@ -3,12 +3,14 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import pytest
 from cryptography.fernet import Fernet
 
 from encryption import (
     get_fernet_instance,
     encrypt_message,
     decrypt_message_with_key,
+    DecryptionError,
 )
 
 
@@ -32,7 +34,14 @@ def test_wrong_key_cannot_decrypt():
     good = get_fernet_instance(Fernet.generate_key().decode())
     bad = get_fernet_instance(Fernet.generate_key().decode())
     token = encrypt_message("secreto", good)
-    assert decrypt_message_with_key(token, bad).startswith("Error al desencriptar")
+    with pytest.raises(DecryptionError):
+        decrypt_message_with_key(token, bad)
+
+
+def test_garbage_payload_raises():
+    f = get_fernet_instance(Fernet.generate_key().decode())
+    with pytest.raises(DecryptionError):
+        decrypt_message_with_key("esto-no-es-un-token", f)
 
 
 def test_empty_key_rejected():
