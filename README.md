@@ -1,4 +1,4 @@
-![Encrypted MQTT Chat](docs/banner.png)
+![Encrypted MQTT Chat](./docs/banner.png)
 
 # encrypted-mqtt-chat
 
@@ -10,11 +10,21 @@ I built this to learn how MQTT publish/subscribe works and what you can and
 cannot get from symmetric encryption on top of a channel you do not control.
 The "what it does not protect" section below is the honest part.
 
-![Login screen — username, topic and a generated Fernet key](docs/screenshots/login.png)
+## Screenshots
 
-![Two clients talking on one topic against a local broker; own messages in blue, the other person's in orange](docs/screenshots/chat.png)
+Captured from local runs against a local broker.
 
-![A third client on the same topic with a different key: the app can't read those messages, says so once, and drops them instead of showing broken text](docs/screenshots/foreign-key.png)
+![Login screen — username, topic and a generated Fernet key](./docs/screenshots/login.png)
+:---:
+Login screen — username, topic and a generated Fernet key
+
+![Two clients talking on one topic against a local broker; own messages in blue, the other person's in orange](./docs/screenshots/chat.png)
+:---:
+Two clients chatting on one topic — own messages in blue, peer messages in orange
+
+![A third client on the same topic with a different key: the app can't read those messages, says so once, and drops them instead of showing broken text](./docs/screenshots/foreign-key.png)
+:---:
+Third client on the topic with a different key — payload dropped with a clean system notice
 
 ## How it works
 
@@ -132,7 +142,7 @@ tests/            pytest suite
 ```
 
 There is no architecture layer beyond that. The GUI holds a client, the client
-holds a cipher, messages flow through both.
+holds a cipher, messages flow through both. See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 
 ## License
 
